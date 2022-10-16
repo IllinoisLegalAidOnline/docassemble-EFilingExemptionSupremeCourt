@@ -18,6 +18,12 @@ objects:
   - other_parties: ALPeopleList.using(there_are_any=True)
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 ---
+code: |
+  ilao_easy_form_title = "E-filing exemption - Supreme Court"
+  ilao_easy_form_url = "https://www.illinoislegalaid.org/legal-information/e-filing-exemption-supreme-court"
+  github_user = 'IllinoisLegalAidOnline'
+  github_repo_name = 'docassemble-EFilingExemptionSupremeCourt'
+---
 sections:
   - review_answers: Review your answers
 ---
@@ -35,8 +41,6 @@ sections:
 # interview order block
 mandatory: True
 code: |
-  ilao_easy_form_title = "E-filing exemption"
-  ilao_easy_form_url = "https://www.illinoislegalaid.org/legal-information/e-filing-exemption-supreme-court"
   nav.set_section('section_intro')
   sees_nav_bar
   set_progress(5)
@@ -240,7 +244,7 @@ fields:
 ---
 id: include phone
 question: |
-  Do you want to include your phone number in the form?
+  Do you want to include your phone number on the form?
 fields:
   - no label: include_phone
     datatype: yesnoradio
@@ -254,7 +258,7 @@ fields:
 ---
 id: include email
 question: |
-  Do you want to include your email address in your form?
+  Do you want to include your email address on the form?
 fields:
   - no label: include_email_address
     datatype: yesnoradio
@@ -292,13 +296,13 @@ question: |
 subquestion: |
   If you have a disability that prevents you from e-filing, you have an automatic exemption. You do not need to use this program to make an exemption form.
 
-  The **{supreme court clerk}** should accommodate your request to file by paper. They should not ask you to explain or prove your disability.
+  The **{Supreme Court Clerk}** should accommodate your request to file by paper. They should not ask you to explain or prove your disability.
 buttons:
   - Exit: exit
   - Restart: restart
 terms:
-  supreme court clerk: |
-    The office that takes care of files and documents for court cases.
+  Supreme Court Clerk: |
+    The office that takes care of files and documents for Supreme Court cases.
 ---
 id: other exemptions
 question: |
@@ -316,13 +320,13 @@ event: exemptions_exit
 question: |
   Sorry
 subquestion: |
-  You are not required to e-file in your situation. The **{supreme court clerk}** should accommodate your request to file by paper.
+  You are not required to e-file in your situation. The **{Supreme Court Clerk}** should accommodate your request to file by paper.
 buttons:
   - Exit: exit
   - Restart: restart
 terms:
-  supreme court clerk: |
-    The office that takes care of files and documents for court cases.
+  Supreme Court Clerk: |
+    The office that takes care of files and documents for Supreme Court cases.
 ---
 id: sensitive case
 question: |
@@ -383,9 +387,9 @@ template: which_party
 subject: |
   **How do I figure out my party label?**
 content: |
-  If you are filing a new case, you are either the Plaintiff or the Petitioner.
+  If you filed the circuit court case, you are either the Plaintiff or the Petitioner.
 
-  If someone filed the case against you, you are either the Defendant or the Respondent.
+  If someone filed the circuit court case against you, you are either the Defendant or the Respondent.
 
   The other court forms in the case should help you figure it out. Look at the top (the caption) of the Complaint or Petition. That form should have a label by your name.
 ---
@@ -516,11 +520,11 @@ fields:
 ---
 id: appeal filer
 question: |
-  Who is appealing the Appellate Court decision?
+  Who is appealing the Appellate Court decision to the Supreme Court?
 subquestion: |
   ${ collapse_template(appeal_who) }  
 field: user_is_appealing
-buttons:
+choices:
   - "My party ( ${comma_and_list(users)})": True
   - "The other party (${comma_and_list(other_parties)})": False
 ---
@@ -539,7 +543,7 @@ choices:
 ---
 id: minor invloved
 question: |
-  Does this appeal involve any of the following issues?
+  Does the appeal involve any of the following issues?
 subquestion: |
   * Child custody
   * Allocation of parental responsibilities
@@ -587,8 +591,6 @@ subquestion: |
   Your form is ready. View and download your form below. Click **Make changes** to fix any mistakes.
   
   Read the instructions to learn what to do next.
-
-  Thank you for using ILAO Easy Forms!
   
   ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
 
@@ -904,7 +906,7 @@ review:
       - recompute:
         - trial_court
     button: |
-      **Which county was the circuit court case in?:** ${ trial_court.address.county }
+      **Which county was the circuit court case in?** ${ trial_court.address.county }
   - Edit: judge.name.first
     button: |
       **Circuit court judge:** ${ judge.name.full(middle='full')}
@@ -944,7 +946,7 @@ subquestion: |
 review:
   - Edit: user_is_appealing
     button: |
-      **Is your party filing the appeal?**
+      **Is your party filing the appeal to the Supreme Court?**
       ${ word(yesno(user_is_appealing))}
   - Edit: supreme_case_number
     button: |
@@ -955,8 +957,12 @@ event: section_user
 question: |
   About you
 subquestion: |
-  Edit your answers below. If you want to edit your name, you should go to the Circuit Court case review section and edit the parties.
+  Edit your answers below.
 review:
+  - Edit: users[0].name.first
+    button: |
+      **Your name:**
+      ${ users[0].name.full(middle="full") }
   - Edit: include_phone
     button: |
       **Do you want to include your phone number?**
