@@ -70,7 +70,7 @@ code: |
     other_parties.gather()
   trial_court
   trial_case_number
-  judge.name.first
+  judge.name.last
   if in_re_check == True:
     in_re_label
   nav.set_section('section_appellate')
@@ -78,7 +78,8 @@ code: |
   appellate_district
   appellate_case_number
   nav.set_section('section_supreme')
-  user_is_appealing
+  if anyone_opposing == True:
+    user_is_appealing
   supreme_case_number
   set_progress(80)
   nav.set_section('section_user')
@@ -90,30 +91,38 @@ code: |
   set_progress(100)
   plaintiff_appellant
   nav.set_section('section_download')
+  plaintiff_appellant
   get_docs_screen
 ---
 depends on:
   - user_is_appealing
   - trial_party_label
+  - anyone_opposing
 code: |
-  if user_is_appealing == True:
-    if trial_party_label == "plaintiff" or trial_party_label == "petitioner":
-      plaintiff_appellant = True
+  if anyone_opposing == True:
+    if user_is_appealing == True:
+      if trial_party_label == "plaintiff" or trial_party_label == "petitioner":
+        plaintiff_appellant = True
+      else:
+        plaintiff_appellant = False
     else:
-      plaintiff_appellant = False
+      if trial_party_label == "plaintiff" or trial_party_label == "petitioner":
+        plaintiff_appellant = False
+      else:
+        plaintiff_appellant = True
+    if plaintiff_appellant == True:
+      defendant_appellant = False
+      plaintiff_appellee = False
+      defendant_appellee = True
+    else:
+      defendant_appellant = True
+      plaintiff_appellee = True
+      defendant_appellee = False
   else:
-    if trial_party_label == "plaintiff" or trial_party_label == "petitioner":
-      plaintiff_appellant = False
-    else:
-      plaintiff_appellant = True
-  if plaintiff_appellant == True:
-    defendant_appellant = False
+    plaintiff_appellant = True
     plaintiff_appellee = False
-    defendant_appellee = True
-  else:
-    defendant_appellant = True
-    plaintiff_appellee = True
     defendant_appellee = False
+    defendant_appellant = False
 ---
 id: welcome
 question: |
@@ -121,7 +130,9 @@ question: |
 subquestion: |
   Welcome to Illinois Legal Aid Online's **E-filing exemption - Supreme Court** Easy Form.
 
-  This program helps you certify that you have a good reason to receive an e-filing exemption so you can file paper forms in the Supreme Court.
+  This program helps you certify that you have a good reason to receive an e-filing exemption so you can file paper forms in the Illinois Supreme Court.
+  
+  If you need an e-filing exemption for a case in an appellate court, use the [**E-filing exemption - Appellate Court** Easy Form](https://www.illinoislegalaid.org/legal-information/e-filing-exemption-appellate-court).
   
   Learn about [**e-filing**](https://www.illinoislegalaid.org/legal-information/e-filing-basics).
 field: sees_nav_bar
@@ -292,13 +303,10 @@ question: |
 subquestion: |
   If you have a disability that prevents you from e-filing, you have an automatic exemption. You do not need to use this program to make an exemption form.
 
-  The **{Supreme Court Clerk}** should accommodate your request to file by paper. They should not ask you to explain or prove your disability.
+  The **{Supreme Court clerk}** should accommodate your request to file by paper. They should not ask you to explain or prove your disability.
 buttons:
   - Exit: exit
   - Restart: restart
-terms:
-  Supreme Court Clerk: |
-    The office that takes care of files and documents for Supreme Court cases.
 ---
 id: other exemptions
 question: |
@@ -316,13 +324,10 @@ event: exemptions_exit
 question: |
   Sorry
 subquestion: |
-  You are not required to e-file in your situation. The **{Supreme Court Clerk}** should accommodate your request to file by paper.
+  You are not required to e-file in your situation. The **{Supreme Court clerk}** should accommodate your request to file by paper.
 buttons:
   - Exit: exit
   - Restart: restart
-terms:
-  Supreme Court Clerk: |
-    The office that takes care of files and documents for Supreme Court cases.
 ---
 id: sensitive case
 question: |
@@ -481,20 +486,22 @@ id: case number
 question: |
   What is the circuit court case number?
 subquestion: |
-  The **{circuit clerk}** of ${ trial_court.address.county } County gives each case a number when it is filed.
+  The **{circuit court clerk}** of ${ trial_court.address.county } County gives each case a number when it is filed.
 
   The case number is in the caption near the top of the first page of the court forms.
 fields:
   - Circuit court case number: trial_case_number
-terms:
-  circuit clerk: |
-    The office that takes care of files and documents for circuit court cases.
 ---
 id: trial court judge name
 question: |
   Who is the circuit court judge who issued the order being appealed?
+subquestion: |
+  The judge's name is listed on the court order that is being appealed. You can also call the **{circuit court clerk}** to ask for the judge's name.
+  
+  You do not need to enter the judge's full name. You are only required to enter the judge's last name.
 fields:
   - First: judge.name.first
+    required: False
   - Middle: judge.name.middle
     required: False
   - Last: judge.name.last
@@ -714,7 +721,7 @@ review:
   - Edit: trial_case_number
     button: |
       **Circuit court case number:** ${ trial_case_number }
-  - Edit: judge.name.first
+  - Edit: judge.name.last
     button: |
       **Circuit court judge:** ${ judge.name.full(middle='full')}
   - Edit: in_re_check
@@ -745,6 +752,7 @@ review:
     button: |
       **Are you filing the appeal?**
       ${ word(yesno(user_is_appealing))}
+    show if: anyone_opposing
   - Edit: appellate_district
     button: |
       **Appellate Court district:** ${appellate_district}
@@ -903,7 +911,7 @@ review:
         - trial_court
     button: |
       **Which county was the circuit court case in?** ${ trial_court.address.county }
-  - Edit: judge.name.first
+  - Edit: judge.name.last
     button: |
       **Circuit court judge:** ${ judge.name.full(middle='full')}
   - Edit: in_re_check
@@ -944,6 +952,7 @@ review:
     button: |
       **Is your party filing the appeal to the Supreme Court?**
       ${ word(yesno(user_is_appealing))}
+    show if: anyone_opposing
   - Edit: supreme_case_number
     button: |
       **Supreme Court case number:** ${supreme_case_number}
