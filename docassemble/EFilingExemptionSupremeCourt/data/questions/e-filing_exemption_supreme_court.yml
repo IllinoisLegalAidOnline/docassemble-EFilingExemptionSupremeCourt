@@ -303,7 +303,7 @@ content: |
 id: disability exit
 event: disability_exit
 question: |
-  Sorry
+  No need to request exemption
 subquestion: |
   If you have a disability that prevents you from e-filing, you have an automatic exemption. You do not need to use this program to make an exemption form.
 
@@ -326,7 +326,7 @@ fields:
 id: exemptions exit
 event: exemptions_exit
 question: |
-  Sorry
+  No need to request exemption
 subquestion: |
   You are not required to e-file in your situation. The **{Supreme Court clerk}** should accommodate your request to file by paper.
 buttons:
@@ -788,6 +788,10 @@ review:
       % if other_reasons.all_false() == True:
         **Do you have any other reasons for requesting an e-filing exemption?** No
       % endif
+  - Edit: users[0].address.address
+    button: |
+      **Your address:**
+      ${users[0].address.on_one_line()}
   - Edit: include_phone
     button: |
       **Do you want to include your phone number?**
@@ -976,6 +980,10 @@ review:
     button: |
       **Your name:**
       ${ users[0].name.full(middle="full") }
+  - Edit: users[0].address.address
+    button: |
+      **Your address:**
+      ${users[0].address.on_one_line()}
   - Edit: include_phone
     button: |
       **Do you want to include your phone number?**
