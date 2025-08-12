@@ -24,7 +24,7 @@ sections:
   - section_qualify: Qualifications
   - section_parties: Parties
   - section_case: About the case
-  - section_contact: Your contact information
+  - section_user: About you
   - section_download: Download
 #  - review_answers: Review your answers
 ---
@@ -47,7 +47,7 @@ code: |
     exemptions_exit
   if sensitive_case == False:
     if have_lawyer == True:
-      do_not_qualify
+      lawyer_help
     else:
       if other_reasons.all_false() == True: 
         do_not_qualify
@@ -76,15 +76,17 @@ code: |
   appellate_case_number
   supreme_case_number
   set_progress(80)
-  nav.set_section('section_contact')
+  nav.set_section('section_user')
   users[0].address.address
   if include_phone == True:
     users[0].phone_number
   if include_email_address == True:
     users[0].email
+  e_signature
   set_progress(100)
-  plaintiff_appellant
   nav.set_section('section_download')
+  plaintiff_appellant
+  forms_assembling
   get_docs_screen
 ---
 depends on:
@@ -153,46 +155,18 @@ content: |
 
   This is an example of help. Click again to hide.
 ---
-id: accept terms
-question: |
-  Terms of use
-subquestion: |
-  This program does not provide legal advice. It does not take the place of advice from a lawyer.
-
-  Using this program does not create an attorney-client relationship between you and Illinois Legal Aid Online or its employees.
-
-  ${ collapse_template(get_legal_help) }  
-
-fields:
-  - To continue, you must accept the [**terms of use**](https://www.illinoislegalaid.org/about/terms-of-use).: accept
-    datatype: checkboxes
-    none of the above: False
-    minlength: 1
-    choices:
-      - I accept the terms of use.
-    validation messages:
-      minlength: |
-        You cannot continue unless you agree to the terms of use.
-continue button field: accept_terms
----
-template: get_legal_help
-subject: |
-  **What if I need legal advice?**
-content: |  
-  If you have questions or concerns about your legal problem and want legal advice you should talk to a lawyer.
- 
-  Use [**Get Legal Help**](https://www.illinoislegalaid.org/get-legal-help) to find free or low-cost legal services in your area.
----
 id: qualifications
 continue button field: how_to_qualify
 question: |
   Qualifying for an e-filing exemption
 subquestion: |
-  You may qualify for an e-filing exemption if you are filing court forms in a sensitive case, such as a petition for an Order of Protection, a Civil No Contact Order, or a Stalking No Contact Order.
+  You may qualify for an e-filing exemption if you are filing court forms in an emergency case, such as a petition for an Order of Protection, a Civil No Contact Order, or a Stalking No Contact Order. Other emergency cases may be exempt from e-filing by local rule or order.
 
   You may also qualify if you do not have a lawyer and at least one of the following statements is true:
 
-  * You do not have the Internet or computer access in the home and travel presents a hardship (financial or otherwise),
+  * You do not have the Internet or computer access in your home,
+  * You do not have an email account,
+  * You do not have a credit card, debit card, or bank account,
   * You have trouble reading, writing, or speaking in English, or
   * You tried to e-file your papers, but you were not able to complete the process because the equipment or help you need was not available.
 ---
@@ -224,7 +198,7 @@ fields:
 ---
 template: long_name_help
 subject: |
-  **What if the person's name doesn't fit into 4 fields?**
+  **What if I need more space?**
 content: |
   If the party has a long name like "Jane Smith, Director of Housing," select **Business or organization**. You can then enter the full name and title.
 ---
@@ -296,13 +270,13 @@ question: |
 subquestion: |
   If you have a disability that prevents you from e-filing, you have an automatic exemption. You do not need to use this program to make an exemption form.
 
-  The **{supreme clerk}** should accommodate your request to file by paper. They should not ask you to explain or prove your disability.
+  The **{Supreme Court clerk}** should accommodate your request to file by paper. They should not ask you to explain or prove your disability.
 buttons:
   - Exit: exit
   - Restart: restart
 terms:
-  supreme clerk: |
-    The office that takes care of files and documents for court cases.
+  Supreme Court clerk: |
+    The office that takes care of files and documents for Illinois Supreme Court cases.
 ---
 id: other exemptions
 question: |
@@ -320,19 +294,23 @@ event: exemptions_exit
 question: |
   No e-filing exemption form needed
 subquestion: |
-  You are not required to e-file in your situation. The **{supreme clerk}** should accommodate your request to file by paper.
+  You are not required to e-file in your situation. The **{Supreme Court clerk}** should accommodate your request to file by paper.
 buttons:
   - Exit: exit
   - Restart: restart
 terms:
-  supreme clerk: |
-    The office that takes care of files and documents for court cases.
+  Supreme Court clerk: |
+    The office that takes care of files and documents for Illinois Supreme Court cases.
 ---
 id: sensitive case
 question: |
-  Are you going to file forms into a sensitive case?
+  Are you filing forms into an emergency case?
 subquestion: |
-   For example, a petition for an Order of Protection, a Civil No Contact Order, or a Stalking No Contact Order are all sensitive cases.
+   For example, a petition for an Order of Protection, a Civil No Contact Order, or Stalking No Contact Order are all emergency cases.
+
+   Other emergency cases may be exempt from e-filing by local rule or order.
+
+   **Note:** This question is **not** asking if this is an appeal under rule 311(a). We will ask if the case involves parental responsibility or parenting time (formerly "custody" or "visitation"), or relocation of a child on another screen. Those kinds of cases involving minor children can qualify for expedited review, but they are not automatically exempt from e-filing.
 fields:
   - no label: sensitive_case
     datatype: yesnoradio
@@ -343,6 +321,18 @@ question: |
 fields:
   - no label: have_lawyer
     datatype: yesnoradio
+---
+id: lawyer can request exemption
+event: lawyer_help
+question: |
+  Sorry
+subquestion: |
+  This program is made for people without lawyers. You can ask your lawyer about getting an e-filing exemption.
+  
+  If you need help e-filing, you can visit a [**Legal Self-Help Center**](https://www.illinoislegalaid.org/get-legal-help/lshc-directory) or you can call or text [**Illinois Court Help**](https://www.ilcourthelp.gov) at 833-411-1121.
+buttons:
+  - Exit: exit
+  - Restart: restart
 ---
 id: do not qualify
 event: do_not_qualify
@@ -365,9 +355,11 @@ fields:
   - no label: other_reasons
     datatype: checkboxes
     choices:
-      - "You do not have a computer or Internet access in you home. Your only access is through a public terminal at a courthouse, library, or other location. This poses a financial or other hardship.": no_computer
-      - "You have trouble reading, writing, or speaking in English.": no_english
-      - "You tried to e-file your papers, but you were unable to complete the process because the equipment or help you need is not available.": unable_to
+      - "I do not have the Internet or computer access in the home.": no_computer
+      - "I do not have an email account.": no_email
+      - "I do not have a credit card, debit card, or bank account.": no_bank
+      - "I have trouble reading, writing, or speaking in English.": no_english
+      - "I tried to e-file my papers, but I was unable to complete the process because the equipment or help I need is not available.": unable_to
 ---
 id: trial party label
 question: |
@@ -485,7 +477,7 @@ id: case number
 question: |
   What is the circuit court case number?
 subquestion: |
-  The **{circuit clerk}** of ${ trial_court.address.county.upper() } County gives each case a number when it is filed.
+  The **{circuit clerk}** of ${ trial_court.address.county } County gives each case a number when it is filed.
 
   The case number is in the caption near the top of the first page of the court forms.
 fields:
@@ -497,8 +489,13 @@ terms:
 id: trial court judge name
 question: |
   Who is the circuit court judge who issued the order being appealed?
+subquestion: |
+  The judge's name is listed on the court order that is being appealed. You can also call the **{circuit court clerk}** to ask for the judge's name.
+  
+  You do not need to enter the judge's full name. You are only required to enter the judge's last name.  
 fields:
   - First: judge.name.first
+    required: False
   - Middle: judge.name.middle
     required: False
   - Last: judge.name.last
@@ -507,7 +504,7 @@ id: in re check
 question: |
   Does the circuit court case have the words "**In re:**" in the name?
 subquestion: |
-  Look at the name of the case at the top of the circuit court papers. “In re” is often used in probate, bankruptcy, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called “In re: Estate of Jane Doe.”
+  Look at the name of the case at the top of the circuit court papers. "In re" is often used in probate, bankruptcy, and some family law cases. For example, a probate case regarding Jane Doe’s estate might be called “In re: Estate of Jane Doe.”
 fields:
   - no label: in_re_check
     datatype: yesnoradio
@@ -520,7 +517,7 @@ fields:
 ---
 id: appeal filer
 question: |
-  Are you filing the appeal of the appellate court judgment to the supreme court?
+  Are you filing the appeal of the appellate court judgment to the Supreme Court?
 subquestion: |
   ${ collapse_template(appeal_who) }  
 fields:
@@ -582,12 +579,47 @@ subject: |
 content: |  
   The appellate district should be listed near the top of the appellate court forms.
 ---
+id: e-signature
+question: |
+  Do you want to add your e-signature to your form?
+subquestion: |
+  This program can put “**/s/ ${users[0].name_full()}**” where you would sign your name. The court will accept this as your signature.
+
+  If you do not add your **{e-signature}**, you must sign your paper form before you file it.
+
+  <div class="alert alert-info ilao-info" role="alert">
+    <h6 class="alert-heading">What it means to sign your form</h6>
+    <p>By signing the <i>Certification for Exemption from E-filing</i>, you are certifying that:</p>
+    <p><ul>
+      <li>Everything on the form is true and correct, or you have been informed or you believe it to be true and correct, and</li>
+      <li>You understand that making a false statement on the form is perjury and has penalties provided by law.</li>
+    </ul></p>
+  <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
+  </div>
+fields:
+  - "Add e-signature?": e_signature
+    datatype: yesnoradio
+terms:
+  - "e-signature": |
+      An e-signature is an electronic signature. It is a digital version of a signature that has the same effect as a hand-written signature. 
+---
+id: forms assembling
+continue button field: forms_assembling
+question: |
+  Almost done
+subquestion: |
+  After you click **Next**, it may take a few moments to finish making your forms.
+  
+  ###### You do not need to refresh your screen. Hang in there!
+  
+  [NEWLINE]
+---
 id: get docs screen
 event: get_docs_screen
 question: |
   Download
 subquestion: |
-  Your form is ready. View and download your form below. Click **Make changes** to fix any mistakes.
+  Your form is ready. View and download your form below. Click **:edit: Make changes** to fix any mistakes.
   
   Read the instructions to learn what to do next.
 
@@ -601,7 +633,7 @@ subquestion: |
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
   
-  **Note:** This program does not send your form. You will need to do this yourself.
+  **Note:** This program **does not file** your form. You will need to do this yourself.
 
   Thank you for using ILAO Easy Forms!
 under: |
@@ -643,21 +675,19 @@ attachment:
     skip undefined: True
     editable: False
     fields:
-      - "court_county": ${ trial_court.address.county.upper() }
+      - "court_county": ${ trial_court.address.county }
       - "plaintiff_list": ${ users.full_names() if trial_party_label == "plaintiff" or trial_party_label == "petitioner" else other_parties.full_names()}
-      #- "defendant_list": ${ other_parties.full_names() if anyone_opposing == True and (trial_party_label == "defendant" or trial_party_label == "respondent") else users.full_names()}
       - "defendant_list": ${list_defendants(users.full_names(), other_parties.full_names(), anyone_opposing, trial_party_label)}
       - "trial_case_number": ${ trial_case_number }
       - "appellate_case_number": ${ appellate_case_number }
       - "supreme_case_number__1": ${supreme_case_number}
       - "supreme_case_number__2": ${supreme_case_number}
-      - "no_computer": ${ other_reasons.all_true('no_computer') }
-      - "no_english": ${ other_reasons.all_true('no_english') }
+      - "unable_to_efile": ${ other_reasons.any_true() }
+      - "form_for_self": ${ True }
       - "sensitive_case": ${ sensitive_case }
-      - "unable_to": ${ other_reasons.all_true('unable_to') }
-      - "user_address_one": ${ users[0].address.line_one(bare=True) }
-      - "user_address_two": ${ users[0].address.line_two() }
+      - "user_address_one_line": ${ users[0].address.on_one_line(bare=True) }
       - "user_name": ${ users[0].name_full() }
+      - "user_signature": ${ users[0].name_full() if e_signature else '' }
       - "user_email": ${ users[0].email if include_email_address == True else "" }
       - "user_phone": ${ phone_number_formatted(users[0].phone_number) if include_phone == True else "" }
       - "appellant_plaintiff": ${plaintiff_appellant}
@@ -736,7 +766,7 @@ review:
       ${word(yesno(minor_involved))}
   - Edit: sensitive_case
     button: |
-      **Is this a sensitive case?**
+      **Is this an emergency case?**
       ${ word(yesno(sensitive_case)) }
   - Edit: have_lawyer
     button: |
@@ -762,7 +792,15 @@ review:
         **You are applying for an e-filing exemption because:**
         
       % if other_reasons.all_true('no_computer') == True:
-        * You do not have a computer or Internet access in you home. Your only access is through a public terminal at a courthouse, library, or other location. This poses a financial or other hardship.
+        * You do not have a computer or Internet access in you home.
+        
+      % endif
+      % if other_reasons.all_true('no_email') == True:
+        * You do not have an email account.
+        
+      % endif
+      % if other_reasons.all_true('no_bank') == True:
+        * You do not have a credit card, debit card, or bank account.
         
       % endif
       % if other_reasons.all_true('no_english') == True:
@@ -793,6 +831,10 @@ review:
     button: |
       **Your email:** ${ users[0].email }
     show if: include_email_address
+  - Edit: e_signature
+    button: |
+      **Do you want to add your e-signature to your forms?**
+      ${ word(yesno(e_signature)) }
 ---
 continue button field: users.revisit
 question: |
@@ -839,7 +881,7 @@ subquestion: |
 review:
   - Edit: sensitive_case
     button: |
-      **Is this a sensitive case?**
+      **Is this an emergency case?**
       ${ word(yesno(sensitive_case)) }
   - Edit: have_lawyer
     button: |
@@ -852,7 +894,15 @@ review:
         **You are applying for an e-filing exemption because:**
         
       % if other_reasons.all_true('no_computer') == True:
-        * You do not have a computer or Internet access in you home. Your only access is through a public terminal at a courthouse, library, or other location. This poses a financial or other hardship.
+        * You do not have a computer or Internet access in you home.
+        
+      % endif
+      % if other_reasons.all_true('no_email') == True:
+        * You do not have an email account.
+        
+      % endif
+      % if other_reasons.all_true('no_bank') == True:
+        * You do not have a credit card, debit card, or bank account.
         
       % endif
       % if other_reasons.all_true('no_english') == True:
@@ -945,13 +995,20 @@ review:
     button: |
       **Supreme Court case number:** ${supreme_case_number}
 ---
-id: section_contact
-event: section_contact
+id: user review section
+event: section_user
 question: |
-  Your contact information
+  About you
 subquestion: |
   Edit your answers below.
 review:
+  - Edit: users[0].name.first
+    button: |
+      **Your name:** ${ users[0].name_full() }
+  - Edit: users[0].address.address
+    button: |
+      **Your address:**
+      ${users[0].address.on_one_line()}
   - Edit: include_phone
     button: |
       **Do you want to include your phone number?**
@@ -968,3 +1025,7 @@ review:
     button: |
       **Your email:** ${ users[0].email }
     show if: include_email_address
+  - Edit: e_signature
+    button: |
+      **Do you want to add your e-signature to your forms?**
+      ${ word(yesno(e_signature)) }
