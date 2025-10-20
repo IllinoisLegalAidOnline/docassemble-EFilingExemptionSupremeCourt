@@ -44,17 +44,16 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.EFilingExemptionSupremeCourt',
-      version='1.0.8',
+      version='1.0.9',
       description=('A docassemble extension.'),
       long_description='# docassemble.EFilingExemptionSupremeCourt\r\n\r\nA docassemble extension.\r\n\r\n## Author\r\n\r\nVivian McNaughton, vmcnaughton@illinoislegalaid.org\r\n\r\n',
       long_description_content_type='text/markdown',
       author='Vivian McNaughton',
       author_email='vmcnaughton@illinoislegalaid.org',
-      license='The MIT License (MIT)',
+      license='MIT',
       url='https://docassemble.org',
       packages=find_namespace_packages(),
       install_requires=['docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main', 'docassemble.ILAO>=1.1.10'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/EFilingExemptionSupremeCourt/', package='docassemble.EFilingExemptionSupremeCourt'),
      )
-
